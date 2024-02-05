@@ -1,23 +1,40 @@
 ---
 title: "Estabilidad de implantes dentales (spanish)"
-format: html
+author: "Amaru Agüero Jimenez"
+date: "2024-02-05"
+format:
+  html:
+    code-fold: true
 ---
 
-# Administracion de datos
+# Administración de datos.
 
 ```{r}
-if (!requireNamespace("tidyverse", quietly = TRUE)) {
-  install.packages("tidyverse")
+#| include: false
+#| message: false
+#| echo: false
+#| warning: false
+
+# Function to install and load R packages
+install_and_load <- function(package) {
+  if (!require(package, character.only = TRUE)) {
+    utils::install.packages(package)
+    library(package, character.only = TRUE)
+  }
 }
 
-library(readxl)
-library(tidyverse)
-library(ggplot2)
-library(forcats)
-library(broom)
-library(ggsignif)
-library(ggpubr)
+packages <- c("knitr","kableExtra", "DT", "readxl", "knitr", "ggsignif", "ggpubr", "tidyverse")
+sapply(packages, install_and_load)
 
+opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+
+```{r}
 data <- read_excel("data/Resultados TESIS.xlsx", 
     sheet = "Hoja 1")
 data_long <- data %>%
@@ -162,10 +179,10 @@ test <- wilcox.test(
 
 # Guardar los resultados
 tabla3 <- bind_rows(tabla3, tibble(
-  Cara_del_implante = cara,
+  `Cara del implante` = cara,
   Comparacion = paste("Semana 0 vs", i),
-  Diferencia_Medias = diferencia_medias,
-  P.valor = test$p.value
+  `Difernecia: (semana i - semana 0)` = diferencia_medias,
+  `Valor p (Wilcoxon test)` = test$p.value
 ))
 }
 }
@@ -176,7 +193,7 @@ tabla4<- data_long_2 %>%
   summarise(
     `Tipo reborde 1 (Media)` = mean(Valor[`tipo reborde` == "I"], na.rm = TRUE),
     `Tipo reborde 2 (Media)` = mean(Valor[`tipo reborde` == "II"], na.rm = TRUE),
-    `Valor p (Wilcox test)` = wilcox.test(Valor[`tipo reborde` == "I"], 
+    `Valor p (Wilcoxon test)` = wilcox.test(Valor[`tipo reborde` == "I"], 
                           Valor[`tipo reborde` == "II"], 
                           exact = FALSE, 
                           paired = FALSE)$p.value,
@@ -218,13 +235,22 @@ df_promedio_semana_0 <- data_2 %>%
 ```
 # Metodologia.
 
-# Resultados
+Se realizó un análisis estadístico descriptivo e inferencial, evaluando la distribución normal de las variables mediante la prueba de Shapiro-Wilk. Se representó en tablas y gráficos, la estimación puntual y por intervalos de confianza de la media, la mediana y el rango (mínimo y máximo). Para evaluar si existen diferencias estadísticas entre 2 grupos se ocupó el test no paramétrico de medias Wicoxon y su versión para muestras pareadas, en caso de no cumplir el supuesto de independencia. Por último para la asociación entre 2 variables se ocupó el test de correlación de Spearman.[Consoli S, Recupero DR, Petkovic M, editores. Data Science for Healthcare: Methodologies and Applications. 1a ed. Cham, Suiza: Springer Nature; 2019.]
+
+Para llevar a cabo estos análisis, se ocupó la estimación por intervalos de confianza con un nivel de confianza del 95% (1-α=0,95) de una distribución t de student. Se consideraron diferencias estadísticamente significativas en los análisis, los que obtengan un nivel de significancia o error de tipo 1 admisible de α<0,05. Para el análisis de datos, se utilizaron los siguientes software: R (versión 4.2.3), RStudio (versión 2023.03.0+386) y Git (versión 2.43.0). asegurando una replicabilidad y reproducibilidad de los análisis.
+
+
+# Resultados.
 
 ## Objetivo General: 
 
 ### Investigar la estabilidad mecánica de implantes dentales con superficie de nanopartículas de hidroxiapatita durante un período de 8 semanas, utilizando el análisis de frecuencia de resonancia con Ostell™.
 
 ```{r}
+#| fig-dpi: 800
+#| fig-width: 7
+#| fig-height: 6
+
 # gráfico 1
 ggplot(tabla1, aes(x = Semana, y = media, group = Medicion, color = Medicion)) +
   geom_line(size = 1) +
@@ -240,7 +266,8 @@ ggplot(tabla1, aes(x = Semana, y = media, group = Medicion, color = Medicion)) +
 ```
 
 ```{r}
-print(tabla1)
+datatable(tabla1)
+datatable(tabla3)
 ```
 
 
@@ -249,6 +276,10 @@ print(tabla1)
 ### 1. Determinar si hay una relación entre la calidad del hueso, medida a través de la tomografía computarizada de haz cónico (CBCT), y la estabilidad mecánica del implante.
 
 ```{r}
+#| fig-dpi: 800
+#| fig-width: 14
+#| fig-height: 6
+
 # gráfico 2
 ggplot(tabla2, aes(x = Semana, y = media, group = Medicion, color = Medicion)) +
   geom_line(size = 1) +
@@ -266,11 +297,16 @@ ggplot(tabla2, aes(x = Semana, y = media, group = Medicion, color = Medicion)) +
 ```
 
 ```{r}
-
+datatable(tabla2)
+datatable(tabla4)
 ```
 ### 2. Comparar la estabilidad mecánica inmediatamente después de la instalación del implante, medida con Ostell™, a nivel del implante y a nivel del pilar.
 
 ```{r}
+#| fig-dpi: 800
+#| fig-width: 6
+#| fig-height: 6
+
 # Crear el gráfico
 ggplot(datos_grafico, aes(x = Grupo, y = Media, fill = Grupo)) +
   geom_bar(stat = "identity", position = position_dodge(), width = 0.7, alpha
@@ -294,14 +330,18 @@ ggplot(datos_grafico, aes(x = Grupo, y = Media, fill = Grupo)) +
 ### 3. Evaluar si existe una correlación entre el torque de inserción final y la estabilidad mecánica medida con el índice de estabilidad por resonancia (ISQ) en el implante y en el pilar en el momento T0.
 
 ```{r}
+#| fig-dpi: 800
+#| fig-width: 6
+#| fig-height: 6
+
 # Utilizar ggscatter para crear el gráfico de correlación
 ggscatter(df_promedio_semana_0, x = "Torque inicial", y = "Semana 0", 
           add = "reg.line", # Añadir línea de regresión
           conf.int = TRUE, # Añadir intervalo de confianza para la línea de regresión
           cor.coef = TRUE, # Mostrar el coeficiente de correlación
           cor.method = "spearman", # Usar correlación de Spearman
-          xlab = "Torque Inicial", ylab = "Media del índice de estabilidad por resonancia ISQ en semana 0") +
-  ggtitle("Correlación de Spearman entre Torque Inicial y Media del índice de estabilidad por resonancia ISQ en semana 0") +
+          xlab = "Torque de inserción final.", ylab = "Media del índice de estabilidad por resonancia ISQ en semana 0") +
+  ggtitle("Correlación de Spearman entre torque de inserción final \n y estabilidad mecánica en tiempo 0") +
   theme_minimal()
 ```
 
