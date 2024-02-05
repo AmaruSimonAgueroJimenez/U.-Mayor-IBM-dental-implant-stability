@@ -266,8 +266,8 @@ ggplot(tabla1, aes(x = Semana, y = media, group = Medicion, color = Medicion)) +
 ```
 
 ```{r}
-datatable(tabla1)
-datatable(tabla3)
+kable(tabla1)
+kable(tabla3)
 ```
 
 
@@ -297,8 +297,8 @@ ggplot(tabla2, aes(x = Semana, y = media, group = Medicion, color = Medicion)) +
 ```
 
 ```{r}
-datatable(tabla2)
-datatable(tabla4)
+kable(tabla2)
+kable(tabla4)
 ```
 ### 2. Comparar la estabilidad mecánica inmediatamente después de la instalación del implante, medida con Ostell™, a nivel del implante y a nivel del pilar.
 
